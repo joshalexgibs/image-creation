@@ -40,33 +40,42 @@ namespace System.Drawing
     }
     unsafe static void circle()
     {
-      byte[] redCir = new byte[1600];
-      for(int y = 0; y < 20; y++) // width: 20px
+      byte[] redCir = new byte[40000];
+      for(double y = 0.0; y < 100; y++) // width: 20px
       {
         //int offset = y * 20;
-        for(int x = 0; x < 20; x++) // height: 20px * 4 bytes
+        for(double x = 0.0; x < 100; x++) // height: 20px * 4 bytes
         {
-          int offset = (y * 20) + (x * 4);
-          if((y) == 20 - (x))
+          double offset = (y * 400) + (x * 4);
+          //Math.Pow(y + 10, 2) == (400 - Math.Pow(x + 10, 2))
+          double z = 1000 - (x - 50) * (x - 50) - (y - 50) * (y - 50);
+          if (z < 50 && z > 0.01)
           {
-            Console.WriteLine("Debug: {0}, {1}", x, y);
-            redCir[offset] = 0;
-            redCir[offset + 1] = 0;
-            redCir[offset + 2] = 255;
-            redCir[offset + 3] = 255;
+            //Console.WriteLine("Debug: {0}, {1}", x, y);
+            redCir[(int) offset] = 0;
+            redCir[(int) offset + 1] = 0;
+            redCir[(int) offset + 2] = 255;
+            redCir[(int) offset + 3] = 255;
+          }
+          else if ((x == 49 || x==50) && (y == 49 || y ==50))
+          {
+            redCir[(int)offset] = 255;
+            redCir[(int)offset + 1] = 0;
+            redCir[(int)offset + 2] = 0;
+            redCir[(int)offset + 3] = 255;
           }
           else
           {
-            redCir[offset] = 255;
-            redCir[offset + 1] = 255;
-            redCir[offset + 2] = 255;
-            redCir[offset + 3] = 0;
+            redCir[(int) offset] = 255;
+            redCir[(int) offset + 1] = 255;
+            redCir[(int) offset + 2] = 255;
+            redCir[(int) offset + 3] = 255;
           }
         }
       }
       fixed (byte* ptr = redCir)
       {
-        Bitmap image = new Bitmap(20, 20, 20 * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
+        Bitmap image = new Bitmap(100, 100, 100 * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
         image.Save(@"redCircle.png");
       }
     }
