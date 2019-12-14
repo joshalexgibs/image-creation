@@ -11,14 +11,15 @@ namespace System.Drawing
       else if (args[0] == "box")
       {
         redBox();
-        Console.WriteLine("Created redBox.png in current directory.");
+        //Console.WriteLine("Created redBox.png in current directory.");
       }
       else if (args[0] == "circle")
       {
         circle();
-        Console.WriteLine("Created redCircle.png in current directory.");
+        //Console.WriteLine("Created redCircle.png in current directory.");
       }
     }
+    
     unsafe static void redBox()
     {
       //  { b, g, r  , opacity }
@@ -31,25 +32,25 @@ namespace System.Drawing
         redPix[x + 2] = 255;
         redPix[x + 3] = 255;
       }
-      fixed (byte* ptr = redPix)
-      {
-        //              (width, height, stride * 4, format, pointer)
-        Bitmap image = new Bitmap(10, 10, 10 * 4, Imaging.PixelFormat.Format32bppRgb, new IntPtr(ptr));
-        image.Save(@"redBox.png");
-      }
+      //fixed (byte* ptr = redPix)
+      //{
+      //              (width, height, stride * 4, format, pointer)
+      //  Bitmap image = new Bitmap(10, 10, 10 * 4, Imaging.PixelFormat.Format32bppRgb, new IntPtr(ptr));
+      //  image.Save(@"redBox.png");
+      //}
+      saveImg(redPix, 10, 10, 10, "redBox.png");
     }
+    
     unsafe static void circle()
     {
       byte[] redCir = new byte[40000];
       for(double y = 0.0; y < 100; y++) // width: 20px
       {
-        //int offset = y * 20;
         for(double x = 0.0; x < 100; x++) // height: 20px * 4 bytes
         {
           double offset = (y * 400) + (x * 4);
-          //Math.Pow(y + 10, 2) == (400 - Math.Pow(x + 10, 2))
           double z = 1000 - (x - 50) * (x - 50) - (y - 50) * (y - 50);
-          if (z < 50 && z > 0.01)
+          if (z < 60 && z > 1)
           {
             //Console.WriteLine("Debug: {0}, {1}", x, y);
             redCir[(int) offset] = 0;
@@ -73,10 +74,21 @@ namespace System.Drawing
           }
         }
       }
-      fixed (byte* ptr = redCir)
+      //fixed (byte* ptr = redCir)
+      //{
+      //  Bitmap image = new Bitmap(100, 100, 100 * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
+      //  image.Save(@"redCircle.png");
+      //}
+      saveImg(redCir, 100, 100, 100, "redCircle.png");
+    }
+
+    unsafe static void saveImg(byte[] img, int x, int y, int stride, string saveLoc)
+    {
+      fixed (byte* ptr = img)
       {
-        Bitmap image = new Bitmap(100, 100, 100 * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
-        image.Save(@"redCircle.png");
+        Bitmap image = new Bitmap(x, y, stride * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
+        image.Save(@$"{saveLoc}");
+        Console.WriteLine("Created {0} in current directory.", saveLoc);
       }
     }
   }
