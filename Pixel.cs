@@ -73,7 +73,7 @@ namespace System.Drawing
       int halfY = axisY / 2;
       int radius = (int) Math.Pow(halfX - 1, 2);
       double upLim = axisX * (1 + ((axisX/1000.0) - 0.02));//1.08 at 100, 1 at 20
-      double lowLim = axisX * (-0.25 + (axisX/1500.0 - 0.13));//0.18 at 100, 0.25 at 20
+      double lowLim = axisX * (0.25 - (axisX/3500.0 + 0.04));//0.18 at 100, 0.25 at 20
       Console.WriteLine("up: {0}, low: {1}", upLim, lowLim);
       sizeSet(area);
       for (int y = 0; y < axisY; y++)
