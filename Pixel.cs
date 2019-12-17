@@ -11,7 +11,7 @@ namespace System.Drawing
     public static void Main(string[] args)
     {
       if (args.Length < 3)
-        Console.WriteLine("Enter 'box' or 'circle' followed by width and length.");
+        Console.WriteLine("Enter 'box', 'circle' or 'dup' followed by width and length.");
       else
       {
         bool pass_x = Int32.TryParse(args[1], out axisX);
@@ -27,6 +27,13 @@ namespace System.Drawing
         {
           circle();
         }
+        else if(args[0] == "dup")
+        {
+          axisX = (int) (axisX * 1.2);
+          axisY = (int) (axisY * 1.2);
+          duplicant();
+        }
+        saveImg($"{args[0]}.png");
       }
     }
     
@@ -57,13 +64,12 @@ namespace System.Drawing
     {
       //  { b, g, r  , opacity }
       //  { 0, 0, 255, 255 }
-      int area = axisX * axisY * 4;
+      int area = (int) (axisX * axisY * 4);
       sizeSet(area);
       for (int x = 0; x < area; x+=4)
       {
         pixSet(x, 0, 0, 255, 255);
       }
-      saveImg("redBox.png");
     }
     
     unsafe static void circle()
@@ -97,7 +103,53 @@ namespace System.Drawing
           }
         }
       }
-      saveImg("redCircle.png");
+    }
+
+    unsafe static void duplicant()
+    {
+      int area = axisX * axisY * 4;
+      sizeSet(area);
+      int splitX = (int) (axisX / 2.4);
+      Console.WriteLine(splitX);
+      int halfX = splitX / 2;
+      int halfY = (int) (axisY / 2.4);
+      int xTwo = (int) (halfX * 1.4);
+      Console.WriteLine(xTwo);
+      int yTwo = (int) (halfY * 1.2);
+      int radiusFirst = (int) Math.Pow(halfX - 1, 2);
+      int radiusSecond = (int) Math.Pow(xTwo - 1, 2);
+      Console.WriteLine(Math.Sqrt(radiusFirst));
+      Console.WriteLine(Math.Sqrt(radiusSecond));
+      double upLimFirst = splitX * (1 + ((splitX / 1000.0) - 0.02)); //1.08 at 100, 1 at 20
+      double lowLimFirst = splitX * (0.25 - (splitX / 3500.0 + 0.04)); //0.18 at 100, 0.25 at 20
+      double upLimSecond = (splitX * 1.2) * (1 + ((splitX * 1.2 / 1000.0) - 0.02)); //1.08 at 100, 1 at 20
+      double lowLimSecond = (splitX * 1.2) * (0.25 - (splitX * 1.2 / 3500.0 + 0.04)); //0.18 at 100, 0.25 at 20
+      for (int y = 0; y < axisY; y++)
+      {
+        for (int x = 0; x < axisX; x++)
+        {
+          int offset = (int) (y * axisX * 4) + (x * 4);
+          float z = radiusFirst - (x - halfX + 1) * (x - halfX) - (y - halfY + 1) * (y - halfY);
+          float b = radiusSecond - (x - xTwo + 1 - splitX) * (x - xTwo - splitX) - (y - yTwo + 1) * (y - yTwo);
+          if (z < upLimFirst && z > lowLimFirst)
+          {
+            //Console.WriteLine("Debug: {0}, {1}", x, y);
+            pixSet(offset, 0, 0, 255, 255);
+          }
+          //else if ((x == halfX - 1 || x == halfX) && (y == halfY - 1 || y == halfY))
+          //{
+          //  pixSet(offset, 255, 0, 0, 255);
+          //}
+          else if (b < upLimSecond && b > lowLimSecond)
+          {
+            pixSet(offset, 255, 0, 0, 255);
+          }
+          else
+          {
+            pixSet(offset, 255, 255, 255, 255);
+          }
+        }
+      }
     }
   }
 }
