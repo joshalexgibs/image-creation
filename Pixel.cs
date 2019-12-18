@@ -8,7 +8,7 @@ namespace System.Drawing
     private static int axisX;
     private static int axisY;
 
-    public static void Main(string[] args)
+    public static int Main(string[] args)
     {
       if (args.Length < 3)
         Console.WriteLine("Enter 'box', 'circle' or 'dup' followed by width and length.");
@@ -33,8 +33,15 @@ namespace System.Drawing
           axisY = (int) (axisY * 1.2);
           duplicant();
         }
+        else
+        {
+          Console.WriteLine("Invalid input entered.");
+          Console.WriteLine("Enter 'box', 'circle' or 'dup' followed by width and length.");
+          return 0;
+        }
         saveImg($"{args[0]}.png");
       }
+      return 0;
     }
     
     static void sizeSet(int area)
