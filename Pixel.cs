@@ -11,7 +11,7 @@ namespace System.Drawing
     public static int Main(string[] args)
     {
       if (args.Length < 3)
-        Console.WriteLine("Enter 'box', 'circle' or 'dup' followed by width and length.");
+        Console.WriteLine("Enter 'box', 'circle', 'dup' or 'circleRadian' followed by width and length.");
       else
       {
         bool pass_x = Int32.TryParse(args[1], out axisX);
@@ -131,19 +131,22 @@ namespace System.Drawing
       // x = xCenter + radius*cos(radians)
       // y = yCenter + radius*sin(radians)
       // radius is 49, center at (50,50)
-      
-      sizeSet(40000);
-      double radius = 49;
-      for(int fill = 0; fill < 40000; fill+=4)
+
+      int area = axisX * axisY * 4;
+      int halfX = axisX / 2;
+      int halfY = axisY / 2;
+      sizeSet(area);
+      double radius = halfX - 1;
+      for(int fill = 0; fill < area; fill+=4)
       {
         pixSet(fill, 255, 255, 255, 255);
       }
       for (int degree = 0; degree < 360; degree++)
       {
         double radians = degree * Math.PI / 180;
-        int x = (int) (50 + radius * Math.Cos(radians));
-        int y = (int) (50 + radius * Math.Sin(radians));
-        int offset = (y * 100 * 4) + (x * 4);
+        int x = (int) (halfX + radius * Math.Cos(radians));
+        int y = (int) (halfY + radius * Math.Sin(radians));
+        int offset = (y * axisX * 4) + (x * 4);
         pixSet(offset, 0, 0, 255, 255);
       }
     }
