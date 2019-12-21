@@ -33,6 +33,10 @@ namespace System.Drawing
           axisY = (int) (axisY * 1.2);
           duplicant();
         }
+        else if (args[0] == "circleRadian")
+        {
+          circleRadian();
+        }
         else
         {
           Console.WriteLine("Invalid input entered.");
@@ -61,7 +65,7 @@ namespace System.Drawing
     {
       fixed (byte* ptr = _image)
       {
-        Bitmap image = new Bitmap(axisX, axisY, axisY * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
+        Bitmap image = new Bitmap(axisX, axisY, axisX * 4, Imaging.PixelFormat.Format32bppArgb, new IntPtr(ptr));
         image.Save(@$"{saveLoc}");
         Console.WriteLine("Created {0} in current directory.", saveLoc);
       }
@@ -82,23 +86,32 @@ namespace System.Drawing
     unsafe static void circle()
     {
       int area = axisX * axisY * 4;
+      sizeSet(area);
       int halfX = axisX / 2;
       int halfY = axisY / 2;
       int radius = (int) Math.Pow(halfX - 1, 2);
+      Console.WriteLine("Center: {0}, {1}", halfX, halfY);
       double upLim = axisX * (1 + ((axisX/1000.0) - 0.02));//1.08 at 100, 1 at 20
       double lowLim = axisX * (0.25 - (axisX/3500.0 + 0.04));//0.18 at 100, 0.25 at 20
       Console.WriteLine("up: {0}, low: {1}", upLim, lowLim);
-      sizeSet(area);
       for (int y = 0; y < axisY; y++)
       {
+        double yT = (5) + (70 - halfX+5)*(y/12.5);
+        double xT = (70) - (5 - halfY+5)*(y/12.5);
         for(int x = 0; x < axisX; x++)
         {
           int offset = (y * axisX * 4) + (x * 4);
+          //Console.WriteLine("xT, yT: {0}, {1}", xT, yT);
           float z = radius - (x - halfX + 1) * (x - halfX) - (y - halfY + 1) * (y - halfY);
           if (z < upLim && z > lowLim)
           {
             //Console.WriteLine("Debug: {0}, {1}", x, y);
             pixSet(offset, 0, 0, 255, 255);
+          }
+          // tangent of circle at (70, 5)
+          else if ((xT - yT) < x && (xT -yT) > (x - 2))
+          {
+            pixSet(offset, 255, 0, 255, 255);
           }
           else if ((x == halfX - 1 || x == halfX) && (y == halfY - 1 || y == halfY))
           {
@@ -109,6 +122,29 @@ namespace System.Drawing
             pixSet(offset, 255, 255, 255, 255);
           }
         }
+      }
+    }
+
+    unsafe static void circleRadian()
+    {
+      // radians = degrees * pi / 180
+      // x = xCenter + radius*cos(radians)
+      // y = yCenter + radius*sin(radians)
+      // radius is 49, center at (50,50)
+      
+      sizeSet(40000);
+      double radius = 49;
+      for(int fill = 0; fill < 40000; fill+=4)
+      {
+        pixSet(fill, 255, 255, 255, 255);
+      }
+      for (int degree = 0; degree < 360; degree++)
+      {
+        double radians = degree * Math.PI / 180;
+        int x = (int) (50 + radius * Math.Cos(radians));
+        int y = (int) (50 + radius * Math.Sin(radians));
+        int offset = (y * 100 * 4) + (x * 4);
+        pixSet(offset, 0, 0, 255, 255);
       }
     }
 
@@ -143,10 +179,6 @@ namespace System.Drawing
             //Console.WriteLine("Debug: {0}, {1}", x, y);
             pixSet(offset, 0, 0, 255, 255);
           }
-          //else if ((x == halfX - 1 || x == halfX) && (y == halfY - 1 || y == halfY))
-          //{
-          //  pixSet(offset, 255, 0, 0, 255);
-          //}
           else if (b < upLimSecond && b > lowLimSecond)
           {
             pixSet(offset, 255, 0, 0, 255);
