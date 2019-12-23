@@ -11,7 +11,7 @@ namespace System.Drawing
     public static int Main(string[] args)
     {
       if (args.Length < 3)
-        Console.WriteLine("Enter 'box', 'circle', 'dup' or 'circleRadian' followed by width and length.");
+        Console.WriteLine("Enter 'box', 'circle', 'dup', 'circleRad' or 'dupRad' followed by width and length.");
       else
       {
         bool pass_x = Int32.TryParse(args[1], out axisX);
@@ -33,9 +33,15 @@ namespace System.Drawing
           axisY = (int) (axisY * 1.2);
           duplicant();
         }
-        else if (args[0] == "circleRadian")
+        else if (args[0] == "circleRad")
         {
           circleRadian();
+        }
+        else if (args[0] == "dupRad")
+        {
+          axisX = (int)(axisX * 1.2);
+          axisY = (int)(axisY * 1.2);
+          dupRad();
         }
         else
         {
@@ -136,32 +142,16 @@ namespace System.Drawing
       int halfX = axisX / 2;
       int halfY = axisY / 2;
       sizeSet(area);
-      double radius = halfX - 1;
+      int radius = halfX - 1;
       for(int fill = 0; fill < area; fill+=4)
       {
         pixSet(fill, 255, 255, 255, 255);
       }
       int max = (int) (3.15 * axisX);
       int div = max / 2;
-      int degTan = 115;
-      int degTanTwo = 195;
-      for (int degree = degTan; degree < max; degree++)
-      {
-        double radians = (degree * Math.PI / div) - 0.2;
-        double x = (halfX + radius * Math.Cos(radians));
-        double y = (halfY + radius * Math.Sin(radians));
-        int offset =  (((int) y * axisX * 4) + ((int) x * 4));
-        if (degree == degTan)
-        {
-          tangent((int) x, (int) y, halfX, halfY);
-        }
-        else if (degree == degTanTwo)
-        {
-          tangent(x, y, halfX, halfY);
-          break;
-        }
-        pixSet(offset, 0, 0, 255, 255);
-      }
+      //int degTan = 115;
+      //int degTanTwo = 195;
+      drawRadians(radius, halfX, halfY, axisX);
     }
 
     static void tangent(double xT, double yT, int xCenter, int yCenter)
@@ -218,6 +208,59 @@ namespace System.Drawing
             pixSet(offset, 255, 255, 255, 255);
           }
         }
+      }
+    }
+
+    unsafe static void dupRad()
+    {
+      int area = axisX * axisY * 4;
+      sizeSet(area);
+      int splitX = (int) (axisX / 2.4);
+      
+      int halfX = splitX / 2;
+      int halfY = (int) (axisY / 2.4);
+      int xTwo = (int) (halfX * 1.4) + splitX;
+      int yTwo = (int) (halfY * 1.2);
+
+      int radiusFirst = halfX - 1;
+      int radiusSecond = (int) (radiusFirst * 1.4);
+
+      for (int fill = 0; fill < area; fill += 4)
+      {
+        pixSet(fill, 255, 255, 255, 255);
+      }
+      drawRadians(radiusFirst, halfX, halfY, splitX);
+      Console.WriteLine("first");
+      drawRadians(radiusSecond, xTwo, yTwo, (axisX/2 + 5));
+      Console.WriteLine("second");
+    }
+
+    static void drawRadians(int radius, int xCenter, int yCenter, int span)
+    {
+      int max = (int)(3.15 * span);
+      int div = max / 2;
+      Console.WriteLine("max: {0}, div: {1}", max, div);
+      int counter = 0;
+      Console.WriteLine("xCenter: {0}, yCenter: {1}", xCenter, yCenter);
+      for (int degree = 0; degree < max; degree++)
+      {
+        double radians = (degree * Math.PI / div) - 0.2;
+        double x = (xCenter + radius * Math.Cos(radians));
+        double y = (yCenter + radius * Math.Sin(radians));
+        int offset = (((int)y * axisX * 4) + ((int)x * 4));
+        Console.WriteLine("x: {0}, y: {1}, offset: {2}", x, y, offset);
+        /*if (degree == degTan)
+        {
+          tangent(x, y, halfX, halfY);
+        }
+        else if (degree == degTanTwo)
+        {
+          tangent(x, y, halfX, halfY);
+          break;
+        }*/
+        counter++;
+        pixSet(offset, 0, 0, 255, 255);
+        Console.WriteLine(counter);
       }
     }
   }
