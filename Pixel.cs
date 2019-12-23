@@ -141,13 +141,40 @@ namespace System.Drawing
       {
         pixSet(fill, 255, 255, 255, 255);
       }
-      for (int degree = 0; degree < 360; degree++)
+      int max = (int) (3.15 * axisX);
+      int div = max / 2;
+      int degTan = 115;
+      int degTanTwo = 195;
+      for (int degree = degTan; degree < max; degree++)
       {
-        double radians = degree * Math.PI / 180;
-        int x = (int) (halfX + radius * Math.Cos(radians));
-        int y = (int) (halfY + radius * Math.Sin(radians));
-        int offset = (y * axisX * 4) + (x * 4);
+        double radians = (degree * Math.PI / div) - 0.2;
+        double x = (halfX + radius * Math.Cos(radians));
+        double y = (halfY + radius * Math.Sin(radians));
+        int offset =  (((int) y * axisX * 4) + ((int) x * 4));
+        if (degree == degTan)
+        {
+          tangent((int) x, (int) y, halfX, halfY);
+        }
+        else if (degree == degTanTwo)
+        {
+          tangent(x, y, halfX, halfY);
+          break;
+        }
         pixSet(offset, 0, 0, 255, 255);
+      }
+    }
+
+    static void tangent(double xT, double yT, int xCenter, int yCenter)
+    {
+      double slope = (-xT + xCenter) / (yT - yCenter);
+      for (int x = (int) xT; x < axisX; x++)
+      {
+        int y = (int) (slope * (x - xT) + yT);
+        int offset = (int) ((y * axisX * 4) + (x * 4));
+        if (y < axisY && y >= 0)
+          pixSet(offset, 255, 0, 0, 255);
+        else
+          break;
       }
     }
 
