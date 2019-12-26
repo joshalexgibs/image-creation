@@ -107,11 +107,9 @@ namespace System.Drawing
         for(int x = 0; x < axisX; x++)
         {
           int offset = (y * axisX * 4) + (x * 4);
-          //Console.WriteLine("xT, yT: {0}, {1}", xT, yT);
           float z = radius - (x - halfX + 1) * (x - halfX) - (y - halfY + 1) * (y - halfY);
           if (z < upLim && z > lowLim)
           {
-            //Console.WriteLine("Debug: {0}, {1}", x, y);
             pixSet(offset, 0, 0, 255, 255);
           }
           // tangent of circle at (70, 5)
@@ -149,17 +147,33 @@ namespace System.Drawing
       }
       int max = (int) (3.15 * axisX);
       int div = max / 2;
-      //int degTan = 115;
-      //int degTanTwo = 195;
       drawRadians(radius, halfX, halfY, axisX);
     }
 
-    static void tangent(double xT, double yT, int xCenter, int yCenter)
+    static void tangentOld(double xT, double yT, int xCenter, int yCenter)
     {
       double slope = (-xT + xCenter) / (yT - yCenter);
       for (int x = (int) xT; x < axisX; x++)
       {
         int y = (int) (slope * (x - xT) + yT);
+        int offset = (int) ((y * axisX * 4) + (x * 4));
+        if (y < axisY && y >= 0)
+          pixSet(offset, 255, 0, 0, 255);
+        else
+          break;
+      }
+    }
+
+    static void tangent(double xTan, double yTan, int xCenter, int yCenter)
+    {
+      double nomin = xCenter - xTan;
+      double denom = yTan - yCenter;
+      double slope = nomin / denom;
+      Console.WriteLine("slope: {0}", slope);
+      //(y - yTan)/(yIntercept - yTan) = (x - xTan)/(xIntercept - xTan)
+      for (int x = 0; x < axisX; x++)
+      {
+        int y = (int) (slope * (x - xTan) + yTan);
         int offset = (int) ((y * axisX * 4) + (x * 4));
         if (y < axisY && y >= 0)
           pixSet(offset, 255, 0, 0, 255);
@@ -217,51 +231,114 @@ namespace System.Drawing
       sizeSet(area);
       int splitX = (int) (axisX / 2.4);
       
-      int halfX = splitX / 2;
-      int halfY = (int) (axisY / 2.4);
-      int xTwo = (int) (halfX * 1.4) + splitX;
-      int yTwo = (int) (halfY * 1.2);
+      int xCenterOne = splitX / 2;
+      int yCenterOne = (int) (axisY / 2.4);
+      int xCenterTwo = (int) (xCenterOne * 1.4) + splitX;
+      int yCenterTwo = (int) (yCenterOne * 1.2);
+      Console.WriteLine("Center: ({0}, {1})", xCenterOne, yCenterOne);
 
-      int radiusFirst = halfX - 1;
-      int radiusSecond = (int) (radiusFirst * 1.4);
+      int radiusOne = xCenterOne - 1;
+      int radiusTwo = (int) (radiusOne * 1.4);
+      Console.WriteLine("radiusOne: {0}, radiusTwo: {1}", radiusOne, radiusTwo);
 
+
+      //assuming radiusOne < radiusTwo
+      double xIntercept = ((xCenterOne * radiusTwo) - (xCenterTwo * radiusOne)) / (radiusTwo - radiusOne);
+      double yIntercept = ((yCenterOne * radiusTwo) - (yCenterTwo * radiusOne)) / (radiusTwo - radiusOne);
+      Console.WriteLine("xInt: {0}, yInt: {1}", xIntercept, yIntercept);
+
+      //write functions -> (xIntercept - xCenterOne) and (yIntercept - yCenterOne) basically
+      double xPart = eqPart(xIntercept, xCenterTwo);
+      double yPart = eqPart(yIntercept, yCenterTwo);
+      Console.WriteLine("xPart: {0}, yPart: {1}\n", xPart, yPart);
+
+      //creates xTanOne, xTanTwo, yTanOne, and yTanTwo for use in this function
+      //flip tan outputs and 'part' inputs for finding y values
+      tanLoc(radiusTwo, xPart, yPart, xCenterTwo, out int xTanOne, out int xTanTwo);
+      tanLoc(radiusTwo, yPart, xPart, yCenterTwo, out int yTanTwo, out int yTanOne);
+
+      Console.WriteLine("xTanOne: {0}", xTanOne);
+      Console.WriteLine("xTanTwo: {0}", xTanTwo);
+      Console.WriteLine("yTanOne: {0}", yTanOne);
+      Console.WriteLine("yTanTwo: {0}", yTanTwo);
+
+      //draw
       for (int fill = 0; fill < area; fill += 4)
       {
         pixSet(fill, 255, 255, 255, 255);
       }
-      drawRadians(radiusFirst, halfX, halfY, splitX);
-      Console.WriteLine("first");
-      drawRadians(radiusSecond, xTwo, yTwo, (axisX/2 + 5));
-      Console.WriteLine("second");
+      drawRadians(radiusOne, xCenterOne, yCenterOne, splitX);
+      drawRadians(radiusTwo, xCenterTwo, yCenterTwo, (axisX/2 + 5));
+
+      /*int offsetOne = (int) ((yTanOne * axisX * 4) + (xTanOne * 4));
+      pixSet(offsetOne, 255, 0, 0, 255);
+      
+      int offsetTwo = (int) ((yTanTwo * axisX * 4) + (xTanTwo * 4));
+      pixSet(offsetTwo, 255, 0, 0, 255);*/
+
+      tangent(xTanOne, yTanOne, xCenterTwo, yCenterTwo);
+      tangent(xTanTwo, yTanTwo, xCenterTwo, yCenterTwo);
     }
 
     static void drawRadians(int radius, int xCenter, int yCenter, int span)
     {
       int max = (int)(3.15 * span);
       int div = max / 2;
-      Console.WriteLine("max: {0}, div: {1}", max, div);
-      int counter = 0;
+      /*Console.WriteLine("max: {0}, div: {1}", max, div);
       Console.WriteLine("xCenter: {0}, yCenter: {1}", xCenter, yCenter);
+      int degTan = 115;
+      int degTanTwo = 195;*/
       for (int degree = 0; degree < max; degree++)
       {
         double radians = (degree * Math.PI / div) - 0.2;
         double x = (xCenter + radius * Math.Cos(radians));
         double y = (yCenter + radius * Math.Sin(radians));
         int offset = (((int)y * axisX * 4) + ((int)x * 4));
-        Console.WriteLine("x: {0}, y: {1}, offset: {2}", x, y, offset);
+        //Console.WriteLine("x: {0}, y: {1}, offset: {2}", x, y, offset);
         /*if (degree == degTan)
         {
-          tangent(x, y, halfX, halfY);
+          tangentOld(x, y, xCenter, yCenter);
         }
         else if (degree == degTanTwo)
         {
-          tangent(x, y, halfX, halfY);
+          tangentOld(x, y, xCenter, yCenter);
           break;
         }*/
-        counter++;
         pixSet(offset, 0, 0, 255, 255);
-        Console.WriteLine(counter);
       }
+    }
+
+    static double eqPart(double intercept, int center)
+    {
+      return intercept - center;
+    }
+
+    static void tanLoc(int radius, double xPart, double yPart, int center,
+                             out int tanOne, out int tanTwo)
+    {
+      //Pow operations, first of the original tanLoc operations
+      double xPartPow = Math.Pow(xPart, 2);
+      double yPartPow = Math.Pow(yPart, 2);
+      double radiusPow = Math.Pow(radius, 2);
+
+      //calculation of identities to be affected by the +-
+      double allSqrt = Math.Sqrt(xPartPow + yPartPow - radiusPow);
+      double preSqrt = yPart * radius;
+      double posNeg = preSqrt * allSqrt;
+      
+      //final equation prep
+      double denom = xPartPow + yPartPow;
+      double prepend = radiusPow * xPart;
+
+      //final calculations
+      double nominPos = prepend + posNeg;
+      double nominNeg = prepend - posNeg;
+      double totalPos = nominPos / denom;
+      double totalNeg = nominNeg / denom;
+
+      //assignment
+      tanOne = (int) Math.Ceiling(totalPos + center);
+      tanTwo = (int) Math.Ceiling(totalNeg + center);
     }
   }
 }
